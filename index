@@ -1,117 +1,114 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring User v2</title>
-  <!-- Bootstrap 5 CDN -->
+  <title>User Monitoring Hub - Live GitHub v3</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .main-header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 25px 0; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .card-stat { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
-    .card-stat:hover { transform: translateY(-3px); }
-    .table-responsive-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    body { background-color: #f4f6f9; font-family: system-ui, -apple-system, sans-serif; }
+    .custom-navbar { background-color: #0d6efd; color: white; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .data-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="main-header">
-    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="h3 mb-1 fw-bold">🖥️ USER MONITORING HUB</h1>
-        <p class="mb-0 opacity-75">Sistem Monitoring Terisolasi (Aman & Sinkron dengan GitHub)</p>
-      </div>
-      <span class="badge bg-light text-primary px-3 py-2 fw-semibold">Repository Connected</span>
+  <nav class="custom-navbar mb-4">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <h1 class="h4 mb-0 fw-bold">🖥️ LIVE MONITORING SYSTEM</h1>
+      <span class="badge bg-light text-dark fw-bold">Hosted on GitHub Pages</span>
     </div>
-  </header>
+  </nav>
 
   <div class="container-fluid px-4">
-    <!-- REFRESH & LOADING AREA -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4 class="fw-bold text-secondary mb-0">Live Data Spreadsheet</h4>
-      <button class="btn btn-primary d-flex align-items-center gap-2" onclick="loadSpreadsheetData()">
-        <span>🔄</span> Refresh Dashboard
-      </button>
+      <h3 class="text-secondary fw-semibold mb-0">Data Monitoring Terkini</h3>
+      <button class="btn btn-primary fw-bold" onclick="fetchDataDariGoogle()">🔄 Muat Ulang Data</button>
     </div>
 
-    <!-- SPINNER STATE -->
-    <div id="loading-state" class="text-center py-5">
-      <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-      <p class="text-muted fw-medium">Menghubungkan ke secure spreadsheet...</p>
+    <div id="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 fw-medium">Mengambil data via Google API...</p>
     </div>
 
-    <!-- DATA TABLE STATE -->
-    <div id="data-state" class="table-responsive-container d-none">
+    <div id="content-area" class="data-card d-none">
       <div class="table-responsive">
         <table class="table table-hover table-striped align-middle">
-          <thead id="render-header" class="table-dark">
-            <!-- Header Kolom Otomatis -->
-          </thead>
-          <tbody id="render-rows">
-            <!-- Baris Data Otomatis -->
-          </tbody>
+          <thead id="table-header" class="table-dark">
+            </thead>
+          <tbody id="table-body">
+            </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- LOGIC SCRIPT -->
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      loadSpreadsheetData();
-    });
+    // ⚠️ TUGAS ANDA: Ganti teks di bawah ini dengan URL Web App dari Google Apps Script yang baru saja Anda salin
+    const GOOGLE_SCRIPT_API_URL = "PASTE_URL_EXEC_GOOGLE_APPS_SCRIPT_DISINI";
 
-    function loadSpreadsheetData() {
-      document.getElementById('loading-state').classList.remove('d-none');
-      document.getElementById('data-state').classList.add('d-none');
+    // Menjalankan penembakan data otomatis saat halaman GitHub Pages dibuka
+    document.addEventListener("DOMContentLoaded", fetchDataDariGoogle);
 
-      // Memanggil fungsi di Code.gs
-      google.script.run
-        .withSuccessHandler(populateTable)
-        .withFailureHandler(logError)
-        .ambilDataUserAsli();
-    }
+    async function fetchDataDariGoogle() {
+      const loader = document.getElementById('loading');
+      const content = document.getElementById('content-area');
+      
+      loader.classList.remove('d-none');
+      content.classList.add('d-none');
 
-    function populateTable(rows) {
-      document.getElementById('loading-state').classList.add('d-none');
-      document.getElementById('data-state').classList.remove('d-none');
-
-      const headerContainer = document.getElementById('render-header');
-      const rowsContainer = document.getElementById('render-rows');
-
-      headerContainer.innerHTML = "";
-      rowsContainer.innerHTML = "";
-
-      if(!rows || rows.length === 0) {
-        rowsContainer.innerHTML = "<tr><td colspan='100%' class='text-center text-muted py-4'>Data tidak ditemukan.</td></tr>";
+      if(GOOGLE_SCRIPT_API_URL === "PASTE_URL_EXEC_GOOGLE_APPS_SCRIPT_DISINI") {
+        loader.classList.add('d-none');
+        alert("Konfigurasi Belum Lengkap! Tempelkan URL Exec Google Apps Script Anda ke dalam variabel GOOGLE_SCRIPT_API_URL di bagian bawah file index.html.");
         return;
       }
 
-      // Render Header
-      let headerHtml = "<tr>";
-      rows[0].forEach(col => { headerHtml += `<th class="py-3">${col}</th>`; });
-      headerHtml += "</tr>";
-      headerContainer.innerHTML = headerHtml;
+      try {
+        // Melakukan request data lintas server secara aman (Fetch API)
+        const response = await fetch(GOOGLE_SCRIPT_API_URL);
+        const result = await response.json();
+        
+        loader.classList.add('d-none');
+        content.classList.remove('d-none');
 
-      // Render Baris Data
-      for (let i = 1; i < rows.length; i++) {
-        let rowHtml = "<tr>";
-        rows[i].forEach(cell => {
-          let value = cell;
-          if (cell instanceof Date) { value = new Date(cell).toLocaleString('id-ID'); }
-          rowHtml += `<td>${value}</td>`;
-        });
-        rowHtml += "</tr>";
-        rowsContainer.innerHTML += rowHtml;
+        if(result.status === "success") {
+          renderTabel(result.headers, result.data);
+        } else {
+          alert("Pesan dari Sistem Google: " + result.message);
+        }
+      } catch (error) {
+        loader.classList.add('d-none');
+        alert("Terjadi Kesalahan Jaringan di GitHub: " + error.message);
       }
     }
 
-    function logError(err) {
-      document.getElementById('loading-state').classList.add('d-none');
-      alert("Error Sistem: " + err.message);
+    function renderTabel(headers, data) {
+      const thead = document.getElementById('table-header');
+      const tbody = document.getElementById('table-body');
+      
+      thead.innerHTML = "";
+      tbody.innerHTML = "";
+
+      // 1. Membuat Judul Kolom Otomatis
+      let headRow = "<tr>";
+      headers.forEach(h => { headRow += `<th class="py-3">${h}</th>`; });
+      headRow += "</tr>";
+      thead.innerHTML = headRow;
+
+      // 2. Membuat Baris Isi Otomatis
+      if(data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='100%' class='text-center text-muted'>Tidak ada data di spreadsheet.</td></tr>";
+        return;
+      }
+
+      data.forEach(row => {
+        let bodyRow = "<tr>";
+        headers.forEach(h => {
+          bodyRow += `<td>${row[h] !== undefined ? row[h] : ''}</td>`;
+        });
+        bodyRow += "</tr>";
+        tbody.innerHTML += bodyRow;
+      });
     }
   </script>
 </body>
