@@ -1,125 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Monitoring User v2</title>
+  <!-- Bootstrap 5 CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; font-family: sans-serif; }
-    .navbar-brand { font-weight: bold; letter-spacing: 0.5px; }
-    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
-    .table-container { background: white; padding: 20px; border-radius: 8px; }
-    #loader { display: flex; justify-content: center; align-items: center; min-height: 200px; }
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .main-header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 25px 0; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .card-stat { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
+    .card-stat:hover { transform: translateY(-3px); }
+    .table-responsive-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
   </style>
 </head>
 <body>
 
-  <nav class="navbar navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-      <span class="navbar-brand mb-0 h1">📊 USER MONITORING SYSTEM (APP 2)</span>
-      <span class="badge bg-success">Terhubung Aman ke Spreadsheet Utama</span>
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 mb-1 fw-bold">🖥️ USER MONITORING HUB</h1>
+        <p class="mb-0 opacity-75">Sistem Monitoring Terisolasi (Aman & Sinkron dengan GitHub)</p>
+      </div>
+      <span class="badge bg-light text-primary px-3 py-2 fw-semibold">Repository Connected</span>
     </div>
-  </nav>
+  </header>
 
   <div class="container-fluid px-4">
-    
-    <div class="row mb-4">
-      <div class="col-md-12">
-        <div class="card bg-white p-3">
-          <h5 class="text-muted mb-1">Status Koneksi Data</h5>
-          <p class="mb-0 text-success fw-bold">● Live Data Terbaca Terpisah dari Aplikasi Pertama</p>
-        </div>
-      </div>
+    <!-- REFRESH & LOADING AREA -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold text-secondary mb-0">Live Data Spreadsheet</h4>
+      <button class="btn btn-primary d-flex align-items-center gap-2" onclick="loadSpreadsheetData()">
+        <span>🔄</span> Refresh Dashboard
+      </button>
     </div>
 
-    <div id="loader">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Memuat Data...</span>
-      </div>
-      <span class="ms-3 fw-semibold text-secondary">Sedang mengambil data dari spreadsheet asli...</span>
+    <!-- SPINNER STATE -->
+    <div id="loading-state" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+      <p class="text-muted fw-medium">Menghubungkan ke secure spreadsheet...</p>
     </div>
 
-    <div id="main-content" class="table-container d-none">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="m-0 text-dark">Daftar Log & Data User</h4>
-        <button class="btn btn-sm btn-outline-primary fw-bold" onclick="muatUlangData()">🔄 Refresh Data</button>
-      </div>
-      
+    <!-- DATA TABLE STATE -->
+    <div id="data-state" class="table-responsive-container d-none">
       <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-          <thead id="tabel-head" class="table-dark">
-            </thead>
-          <tbody id="tabel-body">
-            </tbody>
+        <table class="table table-hover table-striped align-middle">
+          <thead id="render-header" class="table-dark">
+            <!-- Header Kolom Otomatis -->
+          </thead>
+          <tbody id="render-rows">
+            <!-- Baris Data Otomatis -->
+          </tbody>
         </table>
       </div>
     </div>
-
   </div>
 
+  <!-- LOGIC SCRIPT -->
   <script>
-    // Kode otomatis berjalan ketika halaman web app monitoring dibuka
     document.addEventListener("DOMContentLoaded", function() {
-      muatUlangData();
+      loadSpreadsheetData();
     });
 
-    function muatUlangData() {
-      // Tampilkan animasi loading, sembunyikan tabel utama terlebih dahulu
-      document.getElementById('loader').classList.remove('d-none');
-      document.getElementById('main-content').classList.add('d-none');
-      
-      // Memanggil fungsi backend 'ambilDataUserAsli()' di file Code.gs secara asinkronus
+    function loadSpreadsheetData() {
+      document.getElementById('loading-state').classList.remove('d-none');
+      document.getElementById('data-state').classList.add('d-none');
+
+      // Memanggil fungsi di Code.gs
       google.script.run
-        .withSuccessHandler(tampilkanData)
-        .withFailureHandler(tanganiError)
+        .withSuccessHandler(populateTable)
+        .withFailureHandler(logError)
         .ambilDataUserAsli();
     }
 
-    function tampilkanData(data) {
-      // Sembunyikan loading, munculkan tabel utama
-      document.getElementById('loader').classList.add('d-none');
-      document.getElementById('main-content').classList.remove('d-none');
+    function populateTable(rows) {
+      document.getElementById('loading-state').classList.add('d-none');
+      document.getElementById('data-state').classList.remove('d-none');
 
-      const thead = document.getElementById('tabel-head');
-      const tbody = document.getElementById('tabel-body');
-      
-      // Bersihkan tabel lama agar tidak double saat tombol refresh diklik
-      thead.innerHTML = "";
-      tbody.innerHTML = "";
+      const headerContainer = document.getElementById('render-header');
+      const rowsContainer = document.getElementById('render-rows');
 
-      if (!data || data.length === 0) {
-        tbody.innerHTML = "<tr><td class='text-center text-muted' colspan='100%'>Tidak ada data ditemukan di dalam spreadsheet Anda.</td></tr>";
+      headerContainer.innerHTML = "";
+      rowsContainer.innerHTML = "";
+
+      if(!rows || rows.length === 0) {
+        rowsContainer.innerHTML = "<tr><td colspan='100%' class='text-center text-muted py-4'>Data tidak ditemukan.</td></tr>";
         return;
       }
 
-      // 1. MEMBUAT HEADER TABEL OTOMATIS (Berdasarkan Baris 1 di Spreadsheet)
-      let headerRow = "<tr>";
-      data[0].forEach(kolom => {
-        headerRow += `<th>${kolom}</th>`;
-      });
-      headerRow += "</tr>";
-      thead.innerHTML = headerRow;
+      // Render Header
+      let headerHtml = "<tr>";
+      rows[0].forEach(col => { headerHtml += `<th class="py-3">${col}</th>`; });
+      headerHtml += "</tr>";
+      headerContainer.innerHTML = headerHtml;
 
-      // 2. MEMASUKKAN BARIS DATA USER (Berdasarkan Baris 2 sampai terakhir di Spreadsheet)
-      for (let i = 1; i < data.length; i++) {
-        let bodyRow = "<tr>";
-        data[i].forEach(sel => {
-          let isiSel = sel;
-          
-          // Deteksi otomatis jika kolom bertipe tanggal/waktu agar rapi saat dibaca manusia
-          if (sel instanceof Date || (typeof sel === 'string' && !isNaN(Date.parse(sel)) && sel.includes('T'))) {
-            isiSel = new Date(sel).toLocaleString('id-ID');
-          }
-          
-          bodyRow += `<td>${isiSel}</td>`;
+      // Render Baris Data
+      for (let i = 1; i < rows.length; i++) {
+        let rowHtml = "<tr>";
+        rows[i].forEach(cell => {
+          let value = cell;
+          if (cell instanceof Date) { value = new Date(cell).toLocaleString('id-ID'); }
+          rowHtml += `<td>${value}</td>`;
         });
-        bodyRow += "</tr>";
-        tbody.innerHTML += bodyRow;
+        rowHtml += "</tr>";
+        rowsContainer.innerHTML += rowHtml;
       }
     }
 
-    function tanganiError(error) {
-      document.getElementById('loader').classList.add('d-none');
-      alert("Gagal memuat data spreadsheet: " + error.message);
+    function logError(err) {
+      document.getElementById('loading-state').classList.add('d-none');
+      alert("Error Sistem: " + err.message);
     }
   </script>
 </body>
